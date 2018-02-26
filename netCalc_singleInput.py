@@ -94,11 +94,28 @@ def netcalc(ip,cidr):
    rngstr[1]+="."
   rngstr[0]+=str(rngmin[i])
   rngstr[1]+=str(rngmax[i])
- return ipstr,clss,mskstr,idstr,brdcststr,rngstr #returns the output strings
+ decmin=0 #initializes variables to store the range values in complete decimal
+ decmax=0
+ for i in range(4): #iterate across the range arrays
+  decmin*=256 #shifts the current value eight bits
+  decmax*=256
+  decmin+=rngmin[i] #adds the new value to the current value
+  decmax+=rngmax[i]
+ scalrng=1+decmax-decmin #finds the range (inclusive)
+ netcount=0; #initializes the count of sub-nets
+ classnmask=0; #initializes the variable to store the default net-mask set by the class
+ if(clss=="A"): #make-shift switch-like statement setting classnmask by clss
+  classnmask=8
+ elif(clss=="B"): 
+  classnmask=16
+ elif(clss=="C"):
+  classnmask=24
+ netcount=2**(cidr-classnmask) #math to the set netcount by the difference of the CIDR and classnmask 
+ return ipstr,clss,mskstr,idstr,brdcststr,rngstr,scalrng,netcount #returns the output strings
 
 if __name__=='__main__':
  import sys
  fullip=sys.argv[1] #gets the command line argument
  arrfullip=fullip.split('/') #seperates the ip from the cidr
- ipstr,clss,mskstr,idstr,brdcststr,rngstr=netcalc(arrfullip[0],int(arrfullip[1])) #gets the values from the function
- print("IP: ",ipstr,"\nClass: ",clss,"\nNet-Mask: ",mskstr,"\nNet-ID: ",idstr,"\nBroadcast-Address: ",brdcststr,"\nRange: ",rngstr[0],"-",rngstr[1],sep="") #prints values to the console
+ ipstr,clss,mskstr,idstr,brdcststr,rngstr,scalrng,netcount=netcalc(arrfullip[0],int(arrfullip[1])) #gets the values from the function
+ print("IP: ",ipstr,"\nClass: ",clss,"\nNet-Mask: ",mskstr,"\nNet-ID: ",idstr,"\nBroadcast-Address: ",brdcststr,"\nRange: ",rngstr[0],"-",rngstr[1],"\nNumber of Possible Hosts: ",scalrng,"\nNumber of Possible Networks: ",netcount,sep="") #prints values to the console
